@@ -11,6 +11,13 @@ class FileFixtureAggregator():
 
     def fetch_candidates(self, search_terms: dict):
         candidates = []
+        candidates.append(
+                {"id" : 1, 
+                 "title": "Testing", 
+                 "published_at": "2024-01-01", 
+                 "source": "Testing Testing", 
+                 "url": "http://test.com", 
+                 "snippet": "Sample Testing"})
         return candidates
 
 class DummyNewsApiAggregator():
@@ -20,4 +27,11 @@ class DummyNewsApiAggregator():
 
     def fetch_candidates(self, search_terms: dict):
         candidates = []
+        candidates.append(
+                {"id" : 1, 
+                 "title": "Testing", 
+                 "published_at": "2024-01-01", 
+                 "source": "Testing Testing", 
+                 "url": "http://test.com", 
+                 "snippet": "Sample Testing"})
         return candidates
