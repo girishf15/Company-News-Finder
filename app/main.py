@@ -7,7 +7,7 @@ import datetime
 from fastapi import FastAPI
 
 from app.models import JobRequest
-from app.config import DATA_DIR, FIXTURES_DIR, BASE_DIR
+from app.config import DATA_DIR, FIXTURES_DIR, BASE_DIR, STATUS_PROCESSING
 
 from app.job_processor import process_job
 from app.utils import *
@@ -89,12 +89,12 @@ async def start_job(request: JobRequest):
         "address": request.address,
         "months": request.months,   
         "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat(),
-        "status": "Processing",
+        "status": STATUS_PROCESSING,
     }
 
     with open(get_request_path(job_id), "w") as f:
         json.dump(request_data, f, indent=4)
 
-    asyncio.create_task(process_job(job_id, request.company_name))
+    asyncio.create_task(process_job(job_id, request.company_name, request.months))
 
     return {"job_id": job_id, "message": "Job started"}
