@@ -97,4 +97,4 @@ async def start_job(request: JobRequest):
 
     asyncio.create_task(process_job(job_id, request.company_name, request.months))
 
-    return {"job_id": job_id, "message": "Job started"}
+    return {"job_id": job_id, "status": STATUS_PROCESSING}
