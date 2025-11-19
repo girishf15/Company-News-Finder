@@ -12,7 +12,7 @@ from fastapi.responses import FileResponse
 from app.models import JobRequest
 from app.config import DATA_DIR, FIXTURES_DIR, BASE_DIR, STATUS_PROCESSING
 
-from app.job_processor import process_job
+from app.job_processor import process_job, generate_search_terms
 from app.utils import *
 
 app = FastAPI()
@@ -112,6 +112,14 @@ def get_metrics():
         "processing_jobs": processing_jobs,
     }
     return metrics
+
+@app.post("/api/jobs/preview")
+def preview_search_terms(request: JobRequest):
+    search_terms = generate_search_terms(request.company_name)
+    return {
+        "company_name": request.company_name,
+        "search_terms": search_terms
+    }
 
 @app.post("/api/jobs/start")
 async def start_job(request: JobRequest):

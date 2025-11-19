@@ -235,6 +235,103 @@
             padding: 20px;
             color: #667eea;
         }
+        
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 30px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        
+        .modal-header {
+            margin-bottom: 20px;
+        }
+        
+        .modal-header h2 {
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .modal-company {
+            color: #667eea;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .modal-body {
+            margin-bottom: 20px;
+        }
+        
+        .terms-section {
+            margin-bottom: 20px;
+        }
+        
+        .terms-section h3 {
+            color: #555;
+            font-size: 14px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+        
+        .term-item {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 8px;
+            font-family: 'Courier New', monospace;
+            color: #333;
+        }
+        
+        .terms-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .term-tag {
+            background: #667eea;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 13px;
+        }
+        
+        .modal-footer {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        
+        .btn-cancel {
+            background: #6c757d;
+        }
+        
+        .btn-cancel:hover {
+            background: #5a6268;
+        }
+        
+        .btn-confirm {
+            background: #28a745;
+        }
+        
+        .btn-confirm:hover {
+            background: #218838;
+        }
     </style>
 </head>
 <body>
@@ -279,12 +376,45 @@
         </div>
     </div>
     
+    <!-- Confirmation Modal -->
+    <div id="confirmModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Confirm Search Terms</h2>
+                <div class="modal-company" id="modalCompanyName"></div>
+            </div>
+            
+            <div class="modal-body">
+                <div class="terms-section">
+                    <h3>Normalized Name</h3>
+                    <div class="term-item" id="modalNormalizedName"></div>
+                </div>
+                
+                <div class="terms-section">
+                    <h3>Partial Matches</h3>
+                    <div class="terms-list" id="modalPartialMatches"></div>
+                </div>
+                
+                <div class="terms-section">
+                    <h3>Industry Keywords</h3>
+                    <div class="terms-list" id="modalIndustryKeywords"></div>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+                <button class="btn-confirm" onclick="confirmAndStart()">Confirm & Start</button>
+            </div>
+        </div>
+    </div>
+    
     <script>
         let jobs = [];
         let selectedJobId = null;
         let pollInterval = null;
+        let pendingJobData = null;
         
-        // Submit form
+        // Submit form - show preview then start
         document.getElementById('jobForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -294,10 +424,11 @@
             
             const submitBtn = document.getElementById('submitBtn');
             submitBtn.disabled = true;
-            submitBtn.textContent = 'Starting...';
+            submitBtn.textContent = 'Generating preview...';
             
             try {
-                const response = await fetch('/api/jobs/start', {
+                // Call preview endpoint to show search terms
+                const previewResponse = await fetch('/api/jobs/preview', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
@@ -307,12 +438,79 @@
                     })
                 });
                 
+                const previewData = await previewResponse.json();
+                
+                // Store job data
+                pendingJobData = {
+                    company_name: company,
+                    address: address,
+                    months: months
+                };
+                
+                // Show preview modal
+                showConfirmationModal(company, previewData.search_terms);
+                
+            } catch (error) {
+                alert('Error generating preview: ' + error.message);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Start Search';
+            }
+        });
+        
+        // Show confirmation modal
+        function showConfirmationModal(companyName, searchTerms) {
+            document.getElementById('modalCompanyName').textContent = companyName;
+            document.getElementById('modalNormalizedName').textContent = searchTerms.normalized_name;
+            
+            const partialMatches = document.getElementById('modalPartialMatches');
+            partialMatches.innerHTML = searchTerms.partial_matches.map(term => 
+                `<span class="term-tag">${term}</span>`
+            ).join('');
+            
+            const industryKeywords = document.getElementById('modalIndustryKeywords');
+            if (searchTerms.industry_keywords && searchTerms.industry_keywords.length > 0) {
+                industryKeywords.innerHTML = searchTerms.industry_keywords.map(keyword => 
+                    `<span class="term-tag">${keyword}</span>`
+                ).join('');
+            } else {
+                industryKeywords.innerHTML = '<span style="color: #999;">No industry keywords found</span>';
+            }
+            
+            document.getElementById('confirmModal').style.display = 'block';
+        }
+        
+        // Close modal
+        function closeModal() {
+            document.getElementById('confirmModal').style.display = 'none';
+            pendingJobData = null;
+        }
+        
+        // Confirm and start job
+        async function confirmAndStart() {
+            if (!pendingJobData) return;
+            
+            const modal = document.getElementById('confirmModal');
+            modal.style.display = 'none';
+            
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Starting...';
+            
+            try {
+                // Call normal start endpoint - it will generate terms itself
+                const response = await fetch('/api/jobs/start', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(pendingJobData)
+                });
+                
                 const data = await response.json();
                 
                 // Add job to list
                 jobs.unshift({
                     job_id: data.job_id,
-                    company_name: company,
+                    company_name: pendingJobData.company_name,
                     status: 'Processing',
                     timestamp: new Date().toISOString()
                 });
@@ -321,8 +519,8 @@
                 startPolling();
                 
                 // Reset form
-                e.target.reset();
-                document.getElementById('months').value = 3;
+                document.getElementById('jobForm').reset();
+                pendingJobData = null;
                 
             } catch (error) {
                 alert('Error starting job: ' + error.message);
@@ -330,7 +528,7 @@
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Start Search';
             }
-        });
+        }
         
         // Render jobs list
         function renderJobs() {
