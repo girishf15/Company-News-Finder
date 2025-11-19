@@ -33,8 +33,12 @@ def get_partial_matches(company_name):
 
 
 def get_industry_keywords(normalized_name):
+
+    if normalized_name in INDUSTRY_TERMS:
+        return INDUSTRY_TERMS[normalized_name]
+    
     for industry, keywords in INDUSTRY_TERMS.items():
-        if industry in normalized_name:
+        if industry.lower() in normalized_name.lower():
             return keywords
     return []
 

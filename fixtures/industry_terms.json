@@ -1,0 +1,8 @@
+{
+  "Tesla Inc": ["electric vehicle", "ev", "battery", "automotive", "vehicle", "car", "gigafactory", "manufacturing", "autonomous", "self-driving", "charging", "energy"],
+  "Microsoft Corporation": ["cloud", "azure", "ai", "artificial intelligence", "software", "technology", "teams", "data center", "quantum computing", "gaming", "digital", "platform"],
+  "Tata Steel": ["steel", "metal", "iron ore", "mining", "manufacturing", "industrial", "green steel", "carbon-neutral", "production", "facilities", "sustainability"],
+  "JPMorgan Chase": ["banking", "financial", "finance", "investment banking", "wealth management", "fintech", "digital banking", "infrastructure financing", "venture capital", "private banking"],
+  "Tata Motors": ["automotive", "vehicle", "car", "electric vehicle", "ev", "suv", "manufacturing", "export", "buses", "commercial vehicle", "mobility", "motor"],
+  "Tata Industries": ["conglomerate", "diversification", "renewable energy", "semiconductor", "ecommerce", "retail", "aviation", "startup", "sustainability", "manufacturing", "technology"]
+}
